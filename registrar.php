@@ -1,5 +1,13 @@
 <?php
 session_start();
+
+// Solo admins pueden crear usuarios desde este formulario
+if (!isset($_SESSION['usuario']) || $_SESSION['rol'] != 'admin') {
+    $_SESSION['error'] = "Sin permisos. Solo los administradores pueden crear usuarios.";
+    header("Location: login.php");
+    exit;
+}
+
 require 'db.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -71,7 +79,7 @@ $conn->close();
             <input type="password" name="confirmar" placeholder="Repite tu contraseña" required>
             
             <button type="submit">Crear Cuenta</button>
-            <a href="login.php" class="btn btn-secondary">Volver al Login</a>
+            <a href="usuarios.php" class="btn btn-secondary">Cancelar</a>
         </form>
     </div>
 </body>

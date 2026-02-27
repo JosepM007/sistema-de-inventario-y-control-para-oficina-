@@ -32,16 +32,17 @@ CREATE TABLE `productos` (
   `nombre` varchar(100) DEFAULT NULL,
   `descripcion` text DEFAULT NULL,
   `cantidad` int(11) DEFAULT NULL,
-  `precio` decimal(10,2) DEFAULT NULL
+  `precio` decimal(10,2) DEFAULT NULL,
+  `proveedores` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `productos`
 --
 
-INSERT INTO `productos` (`id`, `nombre`, `descripcion`, `cantidad`, `precio`) VALUES
-(1, 'Resma de papel carta', 'Paquete de 500 hojas', 20, 6.50),
-(2, 'Cuaderno universitario', 'Cuaderno de 100 hojas', 30, 2.25),
+INSERT INTO `productos` (`id`, `nombre`, `descripcion`, `cantidad`, `precio`, `proveedores`) VALUES
+(1, 'Resma de papel carta', 'Paquete de 500 hojas', 20, 6.50, WALMART),
+(2, 'Cuaderno universitario', 'Cuaderno de 100 hojas', 30, 2.25, FACELA),
 (3, 'Lapicero azul', 'Lapicero tinta azul', 100, 0.35),
 (4, 'Lapicero negro', 'Lapicero tinta negra', 80, 0.35),
 (5, 'Lápiz', 'Lápiz HB', 120, 0.25),
@@ -57,6 +58,7 @@ INSERT INTO `productos` (`id`, `nombre`, `descripcion`, `cantidad`, `precio`) VA
 --
 
 CREATE TABLE `usuarios` (
+
   `id` int(11) NOT NULL,
   `usuario` varchar(50) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,

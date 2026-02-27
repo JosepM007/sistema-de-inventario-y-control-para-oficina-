@@ -14,7 +14,7 @@ if (isset($_SESSION['usuario'])) {
     <title>Login - OfficeStock Pro</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="login-page">
     <div class="container">
         <img src="https://cdn-icons-png.flaticon.com/512/2910/2910791.png" alt="Logo" class="logo">
         
@@ -39,10 +39,11 @@ if (isset($_SESSION['usuario'])) {
         </form>
         
         <div class="nav-links">
-            <a href="registrar.php">Crear cuenta nueva</a><br>
             <a href="recuperar_usuario.php">¿Olvidaste tu usuario?</a><br>
             <a href="recuperar_password.php">¿Olvidaste tu contraseña?</a>
         </div>
     </div>
 </body>
+
+
 </html>

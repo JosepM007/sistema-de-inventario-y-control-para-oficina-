@@ -22,11 +22,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $descripcion = trim($_POST['descripcion']);
     $cantidad = intval($_POST['cantidad']);
     $precio = floatval($_POST['precio']);
-    
+    $proveedores  = trim($_POST['proveedores']);
+
     if (!empty($nombre) && $cantidad >= 0 && $precio >= 0) {
-        $sql = "UPDATE productos SET nombre=?, descripcion=?, cantidad=?, precio=? WHERE id=?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssidi", $nombre, $descripcion, $cantidad, $precio, $id);
+       $sql = "UPDATE productos 
+        SET nombre=?, descripcion=?, cantidad=?, precio=?, proveedores=? 
+        WHERE id=?";
+
+        $stmt->bind_param("ssidsi", $nombre, $descripcion, $cantidad, $precio, $proveedores, $id);
         
         if ($stmt->execute()) {
             $_SESSION['success'] = "Producto actualizado";
@@ -85,6 +88,9 @@ $conn->close();
             
             <label>Precio Unitario * ($)</label>
             <input type="number" name="precio" value="<?php echo $producto['precio']; ?>" min="0" step="0.01" required>
+
+            <label>Proveedores *</label>
+            <input type="text" name="proveedores" value="<?php echo $producto['proveedores']; ?>" required>
             
             <button type="submit">Actualizar</button>
             <a href="dashboard.php" class="btn btn-secondary">Cancelar</a>
