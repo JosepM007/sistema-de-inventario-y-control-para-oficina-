@@ -17,9 +17,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $proveedores = trim($_POST['proveedores']);
     
     if (!empty($nombre) && $cantidad >= 0 && $precio >= 0) {
-        $sql = "INSERT INTO productos (nombre, descripcion, cantidad, precio, proveedores) VALUES (?, ?, ?, ?)";
+        $sql = "INSERT INTO productos (nombre, descripcion, cantidad, precio, proveedores) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssid", $nombre, $descripcion, $cantidad, $precio, $proveedores);
+        $stmt->bind_param("ssids", $nombre, $descripcion, $cantidad, $precio, $proveedores);
         
         if ($stmt->execute()) {
             $_SESSION['success'] = "Producto agregado";
