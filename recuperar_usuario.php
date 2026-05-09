@@ -56,7 +56,23 @@ $conn->close();
         .help-links{display:flex;justify-content:center;gap:20px;margin-top:4px}
         .help-links a{font-size:12px;color:rgba(255,255,255,0.38);text-decoration:none;transition:color .2s}.help-links a:hover{color:#7fecf8}
         .footer-note{font-size:11.5px;color:rgba(255,255,255,0.26);text-align:center}
-    </style>
+    
+        /* ♿ ── BARRA DE ACCESIBILIDAD POR VOZ ── */
+        .skip-link{position:absolute;top:-50px;left:10px;background:#00c8e8;color:#003;padding:8px 16px;border-radius:8px;font-weight:700;font-size:14px;z-index:9999;transition:top .2s;text-decoration:none}
+        .skip-link:focus{top:10px}
+        .voz-bar{background:rgba(0,0,0,0.22);border:1px solid rgba(255,255,255,0.16);border-radius:14px;padding:12px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+        .voz-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.80);white-space:nowrap}
+        .voz-status{font-size:12px;color:rgba(255,255,255,0.45);font-weight:600}
+        .voz-status.activo{color:#6ee7b7;animation:vozBlink 1.2s infinite}
+        @keyframes vozBlink{0%,100%{opacity:1}50%{opacity:.4}}
+        .voz-btns{display:flex;gap:7px;flex-wrap:wrap;margin-left:auto}
+        .btn-voz{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:9px;padding:7px 14px;font-family:'Nunito',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .12s}
+        .btn-voz:hover{opacity:.84;transform:translateY(-1px)}
+        .bv-green{background:linear-gradient(135deg,#065f46,#10b981);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,0.28)}
+        .bv-cyan{background:rgba(0,200,232,0.18);border:1px solid rgba(0,200,232,0.30);color:#7fecf8}
+        .bv-red{background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.32);color:#fca5a5}
+
+        </style>
 </head>
 <body>
 <div class="wrap">
@@ -82,5 +98,22 @@ $conn->close();
     </div>
     <div class="footer-note">OfficeStock Pro · Acceso seguro</div>
 </div>
+
+<script src="js/voz.js"></script>
+<script>
+/* ── Lectura de página: Recuperar Usuario ── */
+VOZ.hablarPagina = function() {
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    
+    ['Página para recuperar tu nombre de usuario.',
+     'Ingresa tu correo electrónico registrado y presiona el botón para continuar.',
+     'Fin.'].forEach(t => VOZ.hablar(t, true));
+
+};
+/* Anunciar alertas automáticamente */
+document.querySelectorAll('[role="alert"]').forEach(el => {
+    if (el.textContent.trim()) setTimeout(() => VOZ.hablar(el.textContent.trim(), true), 600);
+});
+</script>
 </body>
 </html>

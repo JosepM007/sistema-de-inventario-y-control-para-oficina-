@@ -4,6 +4,19 @@ if (!isset($_SESSION['usuario'])) { header("Location: login.php"); exit; }
 if ($_SESSION['rol'] != 'admin')  { header("Location: dashboard.php"); exit; }
 require 'db.php';
 
+// ── Crear tabla auditoria si no existe ───────────────────────────────────────
+$conn->query("
+    CREATE TABLE IF NOT EXISTS `auditoria` (
+        `id`              INT(11) NOT NULL AUTO_INCREMENT,
+        `usuario`         VARCHAR(100) DEFAULT NULL,
+        `accion`          VARCHAR(50)  DEFAULT NULL,
+        `detalle`         TEXT         DEFAULT NULL,
+        `tabla_afectada`  VARCHAR(100) DEFAULT NULL,
+        `fecha`           DATETIME     DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+");
+
 $filtro_accion  = trim($_GET['accion']  ?? '');
 $filtro_usuario = trim($_GET['usuario'] ?? '');
 $filtro_fecha   = trim($_GET['fecha']   ?? '');
@@ -16,16 +29,20 @@ $where_str = $where ? "WHERE " . implode(" AND ", $where) : '';
 
 $historial_res = $conn->query("SELECT * FROM auditoria $where_str ORDER BY fecha DESC LIMIT 100");
 $historial = [];
-while ($r = $historial_res->fetch_assoc()) $historial[] = $r;
+if ($historial_res) while ($r = $historial_res->fetch_assoc()) $historial[] = $r;
 
-$total_movimientos = $conn->query("SELECT COUNT(*) as t FROM auditoria")->fetch_assoc()['t'];
-$movimientos_hoy   = $conn->query("SELECT COUNT(*) as t FROM auditoria WHERE DATE(fecha) = CURDATE()")->fetch_assoc()['t'];
-$total_entradas    = $conn->query("SELECT COUNT(*) as t FROM auditoria WHERE accion = 'ENTRADA'")->fetch_assoc()['t'];
-$total_salidas_a   = $conn->query("SELECT COUNT(*) as t FROM auditoria WHERE accion = 'SALIDA'")->fetch_assoc()['t'];
+$res = $conn->query("SELECT COUNT(*) as t FROM auditoria");
+$total_movimientos = $res ? $res->fetch_assoc()['t'] : 0;
+$res = $conn->query("SELECT COUNT(*) as t FROM auditoria WHERE DATE(fecha) = CURDATE()");
+$movimientos_hoy   = $res ? $res->fetch_assoc()['t'] : 0;
+$res = $conn->query("SELECT COUNT(*) as t FROM auditoria WHERE accion = 'ENTRADA'");
+$total_entradas    = $res ? $res->fetch_assoc()['t'] : 0;
+$res = $conn->query("SELECT COUNT(*) as t FROM auditoria WHERE accion = 'SALIDA'");
+$total_salidas_a   = $res ? $res->fetch_assoc()['t'] : 0;
 
 $usuarios_res = $conn->query("SELECT DISTINCT usuario FROM auditoria ORDER BY usuario ASC");
 $usuarios_lista = [];
-while ($r = $usuarios_res->fetch_assoc()) $usuarios_lista[] = $r['usuario'];
+if ($usuarios_res) while ($r = $usuarios_res->fetch_assoc()) $usuarios_lista[] = $r['usuario'];
 $conn->close();
 ?>
 <!DOCTYPE html>
@@ -123,7 +140,23 @@ $conn->close();
         .empty-msg    { text-align:center; padding:40px; color:var(--text-muted); }
 
         @media (max-width:768px) { .sidebar{display:none;} .page-body{padding:16px;} }
-    </style>
+    
+        /* ♿ ── BARRA DE ACCESIBILIDAD POR VOZ ── */
+        .skip-link{position:absolute;top:-50px;left:10px;background:#00c8e8;color:#003;padding:8px 16px;border-radius:8px;font-weight:700;font-size:14px;z-index:9999;transition:top .2s;text-decoration:none}
+        .skip-link:focus{top:10px}
+        .voz-bar{background:rgba(0,0,0,0.22);border:1px solid rgba(255,255,255,0.16);border-radius:14px;padding:12px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+        .voz-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.80);white-space:nowrap}
+        .voz-status{font-size:12px;color:rgba(255,255,255,0.45);font-weight:600}
+        .voz-status.activo{color:#6ee7b7;animation:vozBlink 1.2s infinite}
+        @keyframes vozBlink{0%,100%{opacity:1}50%{opacity:.4}}
+        .voz-btns{display:flex;gap:7px;flex-wrap:wrap;margin-left:auto}
+        .btn-voz{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:9px;padding:7px 14px;font-family:'Nunito',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .12s}
+        .btn-voz:hover{opacity:.84;transform:translateY(-1px)}
+        .bv-green{background:linear-gradient(135deg,#065f46,#10b981);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,0.28)}
+        .bv-cyan{background:rgba(0,200,232,0.18);border:1px solid rgba(0,200,232,0.30);color:#7fecf8}
+        .bv-red{background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.32);color:#fca5a5}
+
+        </style>
 </head>
 <body>
 <div class="layout">
@@ -152,6 +185,17 @@ $conn->close();
         </div>
 
         <div class="page-body">
+            <!-- ♿ ASISTENTE DE VOZ -->
+            <section class="voz-bar" role="region" aria-label="Asistente de voz para personas con discapacidad visual">
+                <div class="voz-title" aria-hidden="true">♿ 🔊 Asistente de Voz</div>
+                <span class="voz-status" id="vozStatus" aria-live="polite" aria-atomic="true">Listo</span>
+                <div class="voz-btns">
+                    <button class="btn-voz bv-green" onclick="leerPagina()" aria-label="Leer toda la pagina en voz alta">🔊 Leer página</button>
+                    <button class="btn-voz bv-cyan"  onclick="leerAyuda()"  aria-label="Escuchar instrucciones de ayuda">❓ Ayuda</button>
+                    <button class="btn-voz bv-red"   onclick="detenerVoz()" aria-label="Detener la lectura de voz">⏹ Detener</button>
+                </div>
+            </section>
+
 
             <div class="stats-grid">
                 <div class="stat-card"><div class="stat-icon ic-cyan">📋</div><div><div class="stat-num"><?php echo $total_movimientos; ?></div><div class="stat-label">Total Movimientos</div></div></div>
@@ -236,5 +280,68 @@ $conn->close();
         </div>
     </div>
 </div>
+<script>
+/* ── Lectura de página: Auditoría ── */
+
+/* ═══════════════════════════════════════
+   ♿ ASISTENTE DE VOZ — inline, sin voz.js
+   ═══════════════════════════════════════ */
+const _vs = document.getElementById('vozStatus');
+function hablar(texto, encolar) {
+    encolar = encolar || false;
+    if (!('speechSynthesis' in window)) return;
+    if (!encolar) window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(texto);
+    u.lang = 'es-ES'; u.rate = 0.92; u.pitch = 1; u.volume = 1;
+    u.onstart = function() { if (_vs) { _vs.textContent = '🔊 Hablando...'; _vs.className = 'voz-status activo'; } };
+    u.onend   = function() { if (_vs) { _vs.textContent = 'Listo'; _vs.className = 'voz-status'; } };
+    window.speechSynthesis.speak(u);
+}
+function detenerVoz() {
+    window.speechSynthesis.cancel();
+    if (_vs) { _vs.textContent = 'Detenido'; _vs.className = 'voz-status'; }
+}
+function leerAyuda() {
+    window.speechSynthesis.cancel();
+    var msgs = [
+        'Ayuda del asistente de voz para personas con discapacidad visual.',
+        'Boton Leer Pagina: lee en voz alta toda la informacion de esta seccion.',
+        'Boton Ayuda: reproduce estas instrucciones.',
+        'Boton Detener: para la voz inmediatamente.',
+        'Usa la tecla Tab para navegar entre los controles.',
+        'Usa Enter o Espacio para activar botones y enlaces.',
+        'Fin de ayuda.'
+    ];
+    msgs.forEach(function(t) { hablar(t, true); });
+}
+
+function leerPagina() {
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    
+    const stats = [...document.querySelectorAll('.stat-card')].map(c => (c.querySelector('.stat-label')?.textContent || '') + ': ' + (c.querySelector('.stat-num')?.textContent || '')).filter(Boolean);
+    const rows  = document.querySelectorAll('tbody tr');
+    const frases = [
+        'Historial de Auditoría. ' + stats.join('. ') + '.',
+        'Se muestran ' + rows.length + ' registros en la tabla.',
+        'Puedes filtrar por tipo de acción, usuario o fecha usando los campos de búsqueda.',
+    ];
+    const primeros = [...rows].slice(0,3);
+    primeros.forEach((r,i) => {
+        const accion  = r.querySelector('.accion-badge')?.textContent.trim() || '';
+        const usuario = r.querySelector('.usuario-cell')?.textContent.trim() || '';
+        const detalle = r.querySelector('.detalle-cell')?.textContent.trim() || '';
+        const fecha   = r.querySelector('.fecha-cell')?.textContent.trim() || '';
+        if (accion) frases.push('Registro ' + (i+1) + ': ' + accion + ' por ' + usuario + '. ' + detalle.substring(0,80) + '. Fecha: ' + fecha + '.');
+    });
+    if (rows.length > 3) frases.push('Hay ' + (rows.length - 3) + ' registros más en la tabla.');
+    frases.push('Fin.');
+    frases.forEach(t => hablar(t, true));
+
+};
+/* Anunciar alertas automáticamente */
+document.querySelectorAll('[role="alert"]').forEach(el => {
+    if (el.textContent.trim()) setTimeout(() => hablar(el.textContent.trim(), true), 600);
+});
+</script>
 </body>
 </html>

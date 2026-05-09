@@ -109,10 +109,35 @@ if (isset($_SESSION['usuario'])) { header("Location: dashboard.php"); exit; }
         .nav-links { display: flex; flex-direction: column; gap: 6px; }
         .nav-links a { color: rgba(160,230,255,0.80); text-decoration: none; font-size: 0.83rem; font-weight: 600; transition: color .2s; }
         .nav-links a:hover { color: #7fecf8; text-decoration: underline; }
-    </style>
+    
+        /* ♿ ── BARRA DE ACCESIBILIDAD POR VOZ ── */
+        .skip-link{position:absolute;top:-50px;left:10px;background:#00c8e8;color:#003;padding:8px 16px;border-radius:8px;font-weight:700;font-size:14px;z-index:9999;transition:top .2s;text-decoration:none}
+        .skip-link:focus{top:10px}
+        .voz-bar{background:rgba(0,0,0,0.22);border:1px solid rgba(255,255,255,0.16);border-radius:14px;padding:12px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+        .voz-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.80);white-space:nowrap}
+        .voz-status{font-size:12px;color:rgba(255,255,255,0.45);font-weight:600}
+        .voz-status.activo{color:#6ee7b7;animation:vozBlink 1.2s infinite}
+        @keyframes vozBlink{0%,100%{opacity:1}50%{opacity:.4}}
+        .voz-btns{display:flex;gap:7px;flex-wrap:wrap;margin-left:auto}
+        .btn-voz{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:9px;padding:7px 14px;font-family:'Nunito',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .12s}
+        .btn-voz:hover{opacity:.84;transform:translateY(-1px)}
+        .bv-green{background:linear-gradient(135deg,#065f46,#10b981);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,0.28)}
+        .bv-cyan{background:rgba(0,200,232,0.18);border:1px solid rgba(0,200,232,0.30);color:#7fecf8}
+        .bv-red{background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.32);color:#fca5a5}
+
+        </style>
 </head>
 <body class="login-page">
-    <div class="login-card">
+    <a class="skip-link" href="#login-form">Saltar al formulario</a>
+<div class="voz-bar" style="max-width:400px;margin:0 auto 16px;" role="region" aria-label="Asistente de voz">
+    <span class="voz-title">♿ Asistente de Voz</span>
+    <span class="voz-status" id="vozStatus" aria-live="polite">Listo</span>
+    <div class="voz-btns">
+        <button class="btn-voz bv-green" onclick="VOZ.hablarPagina()" aria-label="Leer instrucciones de login">🔊 Leer</button>
+        <button class="btn-voz bv-red"   onclick="VOZ.detener()" aria-label="Detener voz">⏹</button>
+    </div>
+</div>
+<div class="login-card" id="login-form">
         <div class="logo-wrapper">
             <img src="https://cdn-icons-png.flaticon.com/512/2910/2910791.png" alt="Logo" class="logo-img">
         </div>
@@ -124,7 +149,7 @@ if (isset($_SESSION['usuario'])) { header("Location: dashboard.php"); exit; }
         if (isset($_SESSION['success'])) { echo '<div class="msg-success">' . htmlspecialchars($_SESSION['success']) . '</div>'; unset($_SESSION['success']); }
         ?>
 
-        <form action="validar_login.php" method="POST">
+        <form id="login-form-inner" action="validar_login.php" method="POST">
             <div class="input-group"><span>👤</span><input type="text"     name="usuario"  placeholder="Usuario"    required></div>
             <div class="input-group"><span>🔒</span><input type="password" name="password" placeholder="Contraseña" required></div>
             <button type="submit" class="btn-login">Iniciar Sesión</button>
@@ -136,5 +161,26 @@ if (isset($_SESSION['usuario'])) { header("Location: dashboard.php"); exit; }
             <a href="recuperar_password.php">¿Olvidaste tu contraseña?</a>
         </div>
     </div>
+
+<script src="js/voz.js"></script>
+<script>
+/* ── Lectura de página: Login ── */
+VOZ.hablarPagina = function() {
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    
+    [
+        'Pantalla de inicio de sesión de OfficeStock Pro.',
+        'Ingresa tu nombre de usuario en el primer campo y tu contraseña en el segundo.',
+        'Luego presiona el botón Iniciar Sesión.',
+        'Si olvidaste tu usuario o contraseña, usa los enlaces en la parte inferior.',
+        'Fin.'
+    ].forEach(t => VOZ.hablar(t, true));
+
+};
+/* Anunciar alertas automáticamente */
+document.querySelectorAll('[role="alert"]').forEach(el => {
+    if (el.textContent.trim()) setTimeout(() => VOZ.hablar(el.textContent.trim(), true), 600);
+});
+</script>
 </body>
 </html>

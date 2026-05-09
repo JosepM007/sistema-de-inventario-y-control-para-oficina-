@@ -73,7 +73,23 @@ if ($result) while ($row = $result->fetch_assoc()) $productos[] = $row;
         .empty-msg { text-align:center; padding:40px; color:rgba(255,255,255,0.55); }
 
         @media (max-width:768px) { .sidebar{display:none;} .main-content{padding:18px;} }
-    </style>
+    
+        /* ♿ ── BARRA DE ACCESIBILIDAD POR VOZ ── */
+        .skip-link{position:absolute;top:-50px;left:10px;background:#00c8e8;color:#003;padding:8px 16px;border-radius:8px;font-weight:700;font-size:14px;z-index:9999;transition:top .2s;text-decoration:none}
+        .skip-link:focus{top:10px}
+        .voz-bar{background:rgba(0,0,0,0.22);border:1px solid rgba(255,255,255,0.16);border-radius:14px;padding:12px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+        .voz-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.80);white-space:nowrap}
+        .voz-status{font-size:12px;color:rgba(255,255,255,0.45);font-weight:600}
+        .voz-status.activo{color:#6ee7b7;animation:vozBlink 1.2s infinite}
+        @keyframes vozBlink{0%,100%{opacity:1}50%{opacity:.4}}
+        .voz-btns{display:flex;gap:7px;flex-wrap:wrap;margin-left:auto}
+        .btn-voz{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:9px;padding:7px 14px;font-family:'Nunito',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:opacity .15s,transform .12s}
+        .btn-voz:hover{opacity:.84;transform:translateY(-1px)}
+        .bv-green{background:linear-gradient(135deg,#065f46,#10b981);color:#fff;box-shadow:0 4px 12px rgba(16,185,129,0.28)}
+        .bv-cyan{background:rgba(0,200,232,0.18);border:1px solid rgba(0,200,232,0.30);color:#7fecf8}
+        .bv-red{background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.32);color:#fca5a5}
+
+        </style>
 </head>
 <body>
 <div class="layout">
@@ -98,7 +114,18 @@ if ($result) while ($row = $result->fetch_assoc()) $productos[] = $row;
         </div>
 
         <div class="breadcrumb">Inicio / Categorías / Nuevo Inventario</div>
-        <a class="back-link" href="categorias.php">← Volver a categorías</a>
+        <a class="back-link"
+            <!-- ♿ ASISTENTE DE VOZ -->
+            <section class="voz-bar" role="region" aria-label="Asistente de voz para personas con discapacidad visual">
+                <div class="voz-title" aria-hidden="true">♿ 🔊 Asistente de Voz</div>
+                <span class="voz-status" id="vozStatus" aria-live="polite" aria-atomic="true">Listo</span>
+                <div class="voz-btns">
+                    <button class="btn-voz bv-green" onclick="leerPagina()" aria-label="Leer toda la pagina en voz alta">🔊 Leer página</button>
+                    <button class="btn-voz bv-cyan"  onclick="leerAyuda()"  aria-label="Escuchar instrucciones de ayuda">❓ Ayuda</button>
+                    <button class="btn-voz bv-red"   onclick="detenerVoz()" aria-label="Detener la lectura de voz">⏹ Detener</button>
+                </div>
+            </section>
+ href="categorias.php">← Volver a categorías</a>
 
         <div class="inv-header">
             <div class="page-title">Registro de Productos Ingresados</div>
@@ -152,6 +179,66 @@ if ($result) while ($row = $result->fetch_assoc()) $productos[] = $row;
         </div>
     </div>
 </div>
+<script>
+/* ── Lectura de página: Inventario ── */
+
+/* ═══════════════════════════════════════
+   ♿ ASISTENTE DE VOZ — inline, sin voz.js
+   ═══════════════════════════════════════ */
+const _vs = document.getElementById('vozStatus');
+function hablar(texto, encolar) {
+    encolar = encolar || false;
+    if (!('speechSynthesis' in window)) return;
+    if (!encolar) window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(texto);
+    u.lang = 'es-ES'; u.rate = 0.92; u.pitch = 1; u.volume = 1;
+    u.onstart = function() { if (_vs) { _vs.textContent = '🔊 Hablando...'; _vs.className = 'voz-status activo'; } };
+    u.onend   = function() { if (_vs) { _vs.textContent = 'Listo'; _vs.className = 'voz-status'; } };
+    window.speechSynthesis.speak(u);
+}
+function detenerVoz() {
+    window.speechSynthesis.cancel();
+    if (_vs) { _vs.textContent = 'Detenido'; _vs.className = 'voz-status'; }
+}
+function leerAyuda() {
+    window.speechSynthesis.cancel();
+    var msgs = [
+        'Ayuda del asistente de voz para personas con discapacidad visual.',
+        'Boton Leer Pagina: lee en voz alta toda la informacion de esta seccion.',
+        'Boton Ayuda: reproduce estas instrucciones.',
+        'Boton Detener: para la voz inmediatamente.',
+        'Usa la tecla Tab para navegar entre los controles.',
+        'Usa Enter o Espacio para activar botones y enlaces.',
+        'Fin de ayuda.'
+    ];
+    msgs.forEach(function(t) { hablar(t, true); });
+}
+
+function leerPagina() {
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    
+    const rows = document.querySelectorAll('tbody tr');
+    const frases = [
+        'Página de inventario completo. Se muestran ' + rows.length + ' productos registrados.',
+    ];
+    [...rows].slice(0,5).forEach((r,i) => {
+        const nombre = r.querySelector('.prod-nombre')?.textContent.trim() || '';
+        const prov   = r.querySelector('.badge-prov')?.textContent.trim() || '';
+        const qty    = r.querySelector('.qty, .qty-cero')?.textContent.trim() || '';
+        const precio = r.querySelector('.precio')?.textContent.trim() || '';
+        if (nombre) frases.push('Producto ' + (i+1) + ': ' + nombre + '. Proveedor: ' + prov + '. Cantidad: ' + qty + '. Precio: ' + precio + '.');
+    });
+    if (rows.length > 5) frases.push('Hay ' + (rows.length - 5) + ' productos más en la lista.');
+    frases.push('Puedes descargar el recibo de cada producto usando el botón Recibo en la última columna.');
+    frases.push('Fin.');
+    frases.forEach(t => hablar(t, true));
+
+};
+/* Anunciar alertas automáticamente */
+document.querySelectorAll('[role="alert"]').forEach(el => {
+    if (el.textContent.trim()) setTimeout(() => hablar(el.textContent.trim(), true), 600);
+});
+</script>
 </body>
 </html>
 <?php $conn->close(); ?>
