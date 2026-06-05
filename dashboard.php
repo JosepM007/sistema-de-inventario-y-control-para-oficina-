@@ -17,7 +17,7 @@ if ($_SESSION['rol'] == 'admin') {
     $total_usuarios = $conn->query("SELECT COUNT(*) as t FROM usuarios")->fetch_assoc()['t'];
 }
 
-$bajos_res = $conn->query("SELECT nombre, cantidad, proveedores FROM productos WHERE cantidad < 10 AND cantidad > 0 ORDER BY cantidad ASC LIMIT 5");
+$bajos_res = $conn->query("SELECT nombre, cantidad, proveedores FROM productos WHERE cantidad <= 5 AND cantidad > 0 ORDER BY cantidad ASC LIMIT 5");
 $bajos = [];
 while ($r = $bajos_res->fetch_assoc()) $bajos[] = $r;
 
@@ -292,7 +292,9 @@ $conn->close();
         <?php endif; ?>
         <a href="categorias.php">📂 Categorías</a>
         <a href="proveedores.php">🏢 Proveedores</a>
+          <a href="nuevo_inventario.php"> 📋 Inventario</a>
         <a href="salidas.php">📤 Salidas</a>
+        <a href="devoluciones.php" class=>↩️ Devoluciones</a>
         <a href="auditoria.php">🔍 Auditoría</a>
         <a href="logout.php" class="logout-link">🚪 Cerrar Sesión</a>
     </div>
@@ -399,7 +401,7 @@ $conn->close();
             <div class="alert-strip">
                 <div class="alert-ico">🚨</div>
                 <div style="flex:1;">
-                    <h4>Productos con Stock Bajo (menos de 10 unidades)</h4>
+                    <h4>Productos con Stock Bajo (5 unidades o menos)</h4>
                     <?php if (empty($bajos)): ?>
                         <div class="no-bajo">✅ Todos los productos tienen stock suficiente.</div>
                     <?php else: ?>
@@ -412,6 +414,9 @@ $conn->close();
                                 </div>
                             </div>
                         <?php endforeach; ?>
+                        <?php if ($_SESSION['rol'] == 'admin'): ?>
+                            <a href="productos.php" class="btn-reponer" style="background:linear-gradient(135deg,#92400e,#f59e0b);box-shadow:0 4px 14px rgba(245,158,11,0.32);">➕ Reponer stock ahora</a>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>

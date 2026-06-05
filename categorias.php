@@ -111,7 +111,9 @@ $categorias = [
         <?php endif; ?>
         <a href="categorias.php" class="active">📂 Categorías</a>
         <a href="proveedores.php">🏢 Proveedores</a>
+          <a href="nuevo_inventario.php"> 📋 Inventario</a>
         <a href="salidas.php">📤 Salidas</a>
+            <a href="devoluciones.php" class=>↩️ Devoluciones</a>
         <a href="auditoria.php">🔍 Auditoría</a>
         <a href="logout.php" class="logout-link">🚪 Cerrar Sesión</a>
     </div>

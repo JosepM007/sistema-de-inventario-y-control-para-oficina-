@@ -91,7 +91,9 @@ $usuarios = $conn->query("SELECT * FROM usuarios ORDER BY id ASC");
         <a href="usuarios.php" class="active">👥 Usuarios</a>
         <a href="categorias.php">📂 Categorías</a>
         <a href="proveedores.php">🏢 Proveedores</a>
+        <a href="nuevo_inventario.php"> 📋 Inventario</a>
         <a href="salidas.php">📤 Salidas</a>
+            <a href="devoluciones.php" class=>↩️ Devoluciones</a>
         <a href="auditoria.php">🔍 Auditoría</a>
         <a href="logout.php" class="logout-link">🚪 Cerrar Sesión</a>
     </div>

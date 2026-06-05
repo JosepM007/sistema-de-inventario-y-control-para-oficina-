@@ -10,7 +10,15 @@ if ($id <= 0) { $_SESSION['error'] = "ID inválido"; header("Location: dashboard
 
 // Detectar de dónde viene para redirigir correctamente
 $from_prov = isset($_GET['from_prov']) ? trim($_GET['from_prov']) : '';
-$redir = !empty($from_prov) ? "proveedor.php?prov=" . urlencode($from_prov) : "dashboard.php";
+$back_get  = isset($_GET['back_url'])  ? trim($_GET['back_url'])  : '';
+$allowed_backs = ['nuevo_inventario.php', 'dashboard.php'];
+if (!empty($from_prov)) {
+    $redir = "proveedor.php?prov=" . urlencode($from_prov);
+} elseif (!empty($back_get) && in_array($back_get, $allowed_backs)) {
+    $redir = $back_get;
+} else {
+    $redir = "dashboard.php";
+}
 
 $stmt = $conn->prepare("SELECT nombre FROM productos WHERE id = ?");
 $stmt->bind_param("i", $id);

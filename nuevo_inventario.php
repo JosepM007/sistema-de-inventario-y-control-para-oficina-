@@ -102,7 +102,9 @@ if ($result) while ($row = $result->fetch_assoc()) $productos[] = $row;
         <?php endif; ?>
         <a href="categorias.php">📂 Categorías</a>
         <a href="proveedores.php">🏢 Proveedores</a>
+        <a href="nuevo_inventario.php" class="active"> 📋 Inventario</a>
         <a href="salidas.php">📤 Salidas</a>
+         <a href="devoluciones.php" class=>↩️ Devoluciones</a>
         <a href="auditoria.php">🔍 Auditoría</a>
         <a href="logout.php" class="logout-link">🚪 Cerrar Sesión</a>
     </div>
@@ -125,7 +127,7 @@ if ($result) while ($row = $result->fetch_assoc()) $productos[] = $row;
                     <button class="btn-voz bv-red"   onclick="detenerVoz()" aria-label="Detener la lectura de voz">⏹ Detener</button>
                 </div>
             </section>
- href="categorias.php">← Volver a categorías</a>
+ <a href="categorias.php"> ← Volver a categorías</a>
 
         <div class="inv-header">
             <div class="page-title">Registro de Productos Ingresados</div>
@@ -143,11 +145,14 @@ if ($result) while ($row = $result->fetch_assoc()) $productos[] = $row;
                         <th>🔢 Cantidad</th>
                         <th>💲 Precio Unit.</th>
                         <th>⬇️ Recibo</th>
+                        <?php if ($_SESSION['rol'] == 'admin'): ?>
+                        <th>⚙️ Acciones</th>
+                        <?php endif; ?>
                     </tr>
                 </thead>
                 <tbody>
                 <?php if (empty($productos)): ?>
-                    <tr><td colspan="7" class="empty-msg">No hay productos registrados en el inventario.</td></tr>
+                    <tr><td colspan="<?php echo $_SESSION['rol'] == 'admin' ? '8' : '7'; ?>" class="empty-msg">No hay productos registrados en el inventario.</td></tr>
                 <?php else: ?>
                     <?php foreach ($productos as $i => $p): ?>
                     <tr>
@@ -171,6 +176,25 @@ if ($result) while ($row = $result->fetch_assoc()) $productos[] = $row;
                                 Recibo
                             </a>
                         </td>
+                        <?php if ($_SESSION['rol'] == 'admin'): ?>
+                        <td>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                <a href="editar_producto.php?id=<?php echo intval($p['id']); ?>&back_url=nuevo_inventario.php"
+                                   class="btn-recibo"
+                                   style="background:linear-gradient(135deg,#92400e,#f59e0b);box-shadow:0 3px 10px rgba(245,158,11,0.28);"
+                                   title="Editar producto">
+                                    ✏️ Editar
+                                </a>
+                                <a href="eliminar_producto.php?id=<?php echo intval($p['id']); ?>&back_url=nuevo_inventario.php"
+                                   class="btn-recibo"
+                                   style="background:linear-gradient(135deg,#7f1d1d,#ef4444);box-shadow:0 3px 10px rgba(239,68,68,0.28);"
+                                   title="Eliminar producto"
+                                   onclick="return confirm('¿Seguro que deseas eliminar «<?php echo addslashes(htmlspecialchars($p['nombre'])); ?>»? Esta acción no se puede deshacer.')">
+                                    🗑️ Eliminar
+                                </a>
+                            </div>
+                        </td>
+                        <?php endif; ?>
                     </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>

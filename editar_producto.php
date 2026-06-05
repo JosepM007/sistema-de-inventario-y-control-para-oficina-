@@ -23,10 +23,22 @@ if ($id <= 0) {
     exit;
 }
 
-// Detectar si viene desde proveedor.php para redirigir de vuelta correctamente
+// Detectar si viene desde proveedor.php o nuevo_inventario.php para redirigir de vuelta correctamente
 $from_prov = isset($_GET['from_prov']) ? trim($_GET['from_prov']) : '';
-$back_url  = !empty($from_prov) ? "proveedor.php?prov=" . urlencode($from_prov) : "dashboard.php";
-$back_label = !empty($from_prov) ? "← Volver a " . htmlspecialchars($from_prov) : "← Volver al Dashboard";
+$back_get  = isset($_GET['back_url'])  ? trim($_GET['back_url'])  : '';
+
+// Whitelist de URLs permitidas para redirigir
+$allowed_backs = ['nuevo_inventario.php', 'dashboard.php'];
+if (!empty($from_prov)) {
+    $back_url   = "proveedor.php?prov=" . urlencode($from_prov);
+    $back_label = "← Volver a " . htmlspecialchars($from_prov);
+} elseif (!empty($back_get) && in_array($back_get, $allowed_backs)) {
+    $back_url   = $back_get;
+    $back_label = "← Volver al Inventario";
+} else {
+    $back_url   = "dashboard.php";
+    $back_label = "← Volver al Dashboard";
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nombre      = trim($_POST['nombre']      ?? '');

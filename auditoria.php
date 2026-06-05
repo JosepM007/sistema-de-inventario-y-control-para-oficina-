@@ -171,6 +171,7 @@ $conn->close();
         <a href="proveedores.php">🏢 Proveedores</a>
         <a href="nuevo_inventario.php">📋 Inventario</a>
         <a href="salidas.php">📤 Salidas</a>
+         <a href="devoluciones.php" class=>↩️ Devoluciones</a>
         <a href="auditoria.php" class="active">🔍 Auditoría</a>
         <a href="logout.php" class="logout-link">🚪 Cerrar Sesión</a>
     </div>

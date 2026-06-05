@@ -162,6 +162,7 @@ $es_admin_jose = (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin' && str
         <a href="proveedores.php">🏢 Proveedores</a>
         <a href="nuevo_inventario.php">📋 Inventario</a>
         <a href="salidas.php" class="active" aria-current="page">📤 Salidas</a>
+         <a href="devoluciones.php" class=>↩️ Devoluciones</a>
         <a href="auditoria.php">🔍 Auditoría</a>
         <a href="logout.php" class="logout-link">🚪 Cerrar Sesión</a>
     </nav>
